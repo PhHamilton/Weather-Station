@@ -58,6 +58,29 @@ I2C_ERROR_CODES read_reg(uint8_t device_addr, uint8_t reg, uint8_t buf[], uint8_
 
 I2C_ERROR_CODES write_to_reg(uint8_t device_addr, uint8_t reg, uint8_t data[], uint8_t data_size)
 {
+	uint8_t buf[3];
+	int file;
+	const char* filename = "/dev/i2c-1";
+	file = open(filename, O_RDWR);
+	if (file < 0)
+	{
+		/* ERROR HANDLING; you can check errno to see what went wrong */
+		return FAILED_TO_OPEN_I2C_DEVICE;
+	}
+
+	if (ioctl(file, I2C_SLAVE, device_addr) < 0)
+	{
+		/* ERROR HANDLING; you can check errno to see what went wrong */
+		return FAILED_TO_READ_REG;
+	}	
+	buf[0] = reg;
+	buf[1] = data[0];
+
+	if (write(file, buf, 2) != 2)
+	{
+		/* ERROR HANDLING: i2c transaction failed */
+		return FAILED_TO_WRITE_TO_I2C_DEVICE;
+	}
 	return I2C_OK;
 }
 
