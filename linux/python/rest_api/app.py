@@ -3,7 +3,10 @@ from deviceData import deviceData
 from jsonHandler import jsonHandler
 
 JsonHandler = jsonHandler()
-climateSensor = deviceData("BMP280", "/home/ares/testfile.txt")
+temperatureSensor = deviceData("BMP280", "C", "/home/ares/testfile.txt")
+pressureSensor = deviceData("BMP280", "Pa", "/home/ares/testfile.txt")
+windSpeedSensor = deviceData("DP Wind Speed Sensor", "m/s", "/home/ares/testfile.txt")
+windDirectionSensor = deviceData("Dp Wind Direction Sensor", "unknown", "/home/ares/testfile.txt")
 
 PORT = 5000
 
@@ -26,17 +29,25 @@ def get_sensor_data():
 
 	return jsonify({'SensorData':sensorData, 'status':status})
 
-@app.route('/get_climate_data')
-def get_climate_data():
-	return jsonify(jsonHandler.composeData(climateSensor))
+@app.route('/get_temperature_data')
+def get_temperature_data():
+	return jsonify(jsonHandler.composeData(temperatureSensor))
 
-@app.route('/get_wind_data')
-def get_wind_data():
-	pass
-	
+@app.route('/get_pressure_data')
+def get_pressure_data():
+	return jsonify(jsonHandler.composeData(pressureSensor))
+
+@app.route('/get_wind_speed_data')
+def get_wind_speed_data():
+	return jsonify(jsonHandler.composeData(windSpeedSensor))
+
+@app.route('/get_wind_direction_data')
+def get_wind_direction_data():
+	return jsonify(jsonHandler.composeData(windDirectionSensor))
+
 @app.route('/get_device_data')
 def get_device_data():
-	pass
+	return jsonify(jsonHandler.composeData(climateSensor))
 
 if __name__ == '__main__':
 	app.run(debug=True, host='0.0.0.0', port=PORT)

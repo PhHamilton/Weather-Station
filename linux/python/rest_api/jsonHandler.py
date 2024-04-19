@@ -5,7 +5,8 @@ class jsonHandler():
 		sensorData = {
 						'Name': deviceData.GetName(),
 						'Value': deviceData.GetData(),
-						'LastSeen': deviceData.GetLastSeen()
+						'Unit': deviceData.GetUnit(),
+						'LastSeen': deviceData.GetLastSeen(),
 					 }
 
 		return sensorData
