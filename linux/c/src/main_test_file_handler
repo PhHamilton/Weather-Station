@@ -1,0 +1,43 @@
+#include <stdint.h>
+#include "file_handler.h"
+
+
+int main(int argc, char** argv)
+{
+	const char filePath[] = "/home/ares/testfile.txt";
+	uint8_t rc = read_file(filePath);
+	if(rc != OK)
+	{
+		printf("Failed to read file:  %i\n", (int)rc);
+		return rc;
+	}
+	else
+	{
+		printf("Successfully read file!, file content: %s\n", get_file_content());
+	}
+
+	const char *data = "12";
+	rc = write_to_file(filePath, data);
+	if(rc != OK)
+	{
+		printf("Failed to write to file: %i\n", rc);
+		return rc;
+	}
+	else
+	{
+		printf("Successfully wrote to file!");
+	}
+
+	rc = read_file(filePath);
+	if(rc != OK)
+	{
+		printf("Failed to read file:  %i\n", rc);
+		return rc;
+	}
+	else
+	{
+		printf("Successfully read file!, file content: %s\n", get_file_content());
+	}	
+
+	return 0;
+}
