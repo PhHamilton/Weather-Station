@@ -2,6 +2,8 @@
 #define __I2C_HANDLER_H__
 
 #include "file_handler.h"
+#define I2C_ADAPTER_BUF_SIZE 50
+#define I2C_BUF_SIZE 255
 
 typedef enum
 {
