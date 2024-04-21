@@ -44,7 +44,7 @@ typedef struct
 }BMP280_CONFIG;
 
 BMP280_ERROR_CODES initialize_BMP280(BMP280_CONFIG* config);
-BMP280_ERROR_CODES get_temperature();
+BMP280_ERROR_CODES get_temperature(float *temperature);
 BMP280_ERROR_CODES get_pressure();
 
 #endif //__BMP280_H__
