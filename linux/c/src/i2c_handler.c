@@ -30,22 +30,23 @@ I2C_ERROR_CODES read_reg(uint8_t device_addr, uint8_t reg, uint8_t buf[], uint8_
 	if (ioctl(file, I2C_SLAVE, device_addr) < 0)
 	{
 		/* ERROR HANDLING; you can check errno to see what went wrong */
-		return FAILED_TO_READ_REG;
+		return FAILED_TO_SET_SLAVE;
 	}	
-	buf[0] = reg;
+	//buf[0] = reg;
 
-	if (write(file, buf, 1) != 1)
+	if (write(file, &reg, 1) != 1)
 	{
 		/* ERROR HANDLING: i2c transaction failed */
 		return FAILED_TO_WRITE_TO_I2C_DEVICE;
 	}
 
 	/* Using I2C Read, equivalent of i2c_smbus_read_byte(file) */
-	if (read(file, buf, 1) != 1)
+	if (read(file, buf, buf_size) != buf_size)
 	{
 		return FAILED_TO_READ_REG;
 	}
 
+	close(file);
 	return I2C_OK;
 }
 
