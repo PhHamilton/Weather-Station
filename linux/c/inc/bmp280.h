@@ -3,12 +3,15 @@
 #include <stdint.h>
 
 #define BMP280_ID 0x58
+
 typedef enum
 {
 	ID = 0xD0,
 	RESET = 0xE0,
 	STATUS = 0xF3,
-	CTRL_MEAS = 0xF4
+	CTRL_MEAS = 0xF4,
+	TEMP_MSB = 0xFA,
+	PRESS_MSB = 0xF7
 }BMP280_REGISTERS;
 
 typedef enum
@@ -33,7 +36,8 @@ typedef enum
 	BMP280_OK,
 	BMP280_UNKNOWN_DEVICE,
 	BMP280_FAILED_TO_CONFIGURE_DATA,
-	BMP280_FAILED_TO_READ_DATA
+	BMP280_FAILED_TO_READ_DATA,
+	BMP280_FAILED_TO_WRITE_DATA
 }BMP280_ERROR_CODES;
 
 typedef struct
@@ -43,8 +47,13 @@ typedef struct
 	BMP280_MODES mode;
 }BMP280_CONFIG;
 
+typedef struct
+{
+	float temperature;
+	float pressure;
+}BMP280_DATA;
+
 BMP280_ERROR_CODES initialize_BMP280(BMP280_CONFIG* config);
-BMP280_ERROR_CODES get_temperature(float *temperature);
-BMP280_ERROR_CODES get_pressure();
+BMP280_ERROR_CODES get_BMP280_data(BMP280_DATA *data);
 
 #endif //__BMP280_H__

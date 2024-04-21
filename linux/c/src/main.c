@@ -22,5 +22,18 @@ int main(int argc, char** argv)
 	else
 		printf("Successfully read register: %i\n", data_buf);
 
+	rc = read_reg(BMP280_ADDR, 0xF4, (uint8_t *)&data_buf, 1);
+
+	if(rc != I2C_OK)
+		printf("Failed to read reg: %i\n", rc);
+	else
+		printf("Successfully read register: %i\n", data_buf);
+
+	BMP280_DATA data;
+	if(get_BMP280_data(&data) != BMP280_OK)
+		printf("Failed to read data!\n"); 	
+	else
+		printf("Temperature: %f, Pressure: %f\n", data.temperature, data.pressure); 	
+
 	return 0;
 }
