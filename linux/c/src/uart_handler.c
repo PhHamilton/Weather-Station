@@ -6,9 +6,8 @@
 #include <termios.h> // Contains POSIX terminal control definitions
 #include <unistd.h> // write(), read(), close()
 #include <pthread.h>
-#include <unistd.h>
 
-void *uart_thread(void);
+void *uart_thread(void *vargp);
 
 uint8_t data_available;
 uint8_t thread_is_running;
@@ -86,7 +85,6 @@ UART_ERROR_CODES get_latest_uart_data(char buf[UART_BUF_SIZE])
 void start_uart_thread()
 {
 	thread_is_running = 1;
-	printf("Creating uart thread.. \n");
 	pthread_create(&thread_id, NULL, uart_thread, NULL);
 	pthread_join(thread_id, NULL);
 }
@@ -100,16 +98,13 @@ uint8_t new_data_available(void)
 {
 	return data_available;	
 }
-
-void *uart_thread(void)
-{
-	printf("Entering thread");
-	while(thread_is_running)
+void *uart_thread(void *vargp) 
+{ 
+	while(1)
 	{
-		printf("123");
-		sleep(1);
+		sleep(1); 
+		printf("Running thread.. \n"); 
 	}
-	printf("Exiting thread");
-	pthread_exit(NULL);
-	return NULL;
+    return NULL; 
 }
+
