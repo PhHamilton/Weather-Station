@@ -5,3 +5,4 @@
 *.d
 __pycache__/
 out
+networkCredentials.h
