@@ -1,8 +1,9 @@
 #include <WiFi.h>
 #include "inc/networkCredentials.h"
-#define N_TRANSMISSION_RETRIES 5
+#include "inc/clientHandler.h"
 
-uint8_t transmission_retry_counter = 0;
+client_data_t client_data = {.serverIP = server_ip, .serverPort = server_port};
+ClientHandler clientHandler(&client_data);
 
 typedef enum
 {
@@ -18,6 +19,8 @@ program_states_t program_state = DATA_TRANSMISSION;
 void setup()
 {
     Serial.begin(115200);
+
+
     WiFi.begin(ssid, password);
     Serial.print("Connecting to WiFi");
     while(WiFi.status() != WL_CONNECTED)
@@ -25,6 +28,7 @@ void setup()
         delay(500);
         Serial.print(".");
     }
+    Serial.println("");
 }
 
 void loop()
@@ -45,37 +49,20 @@ void loop()
 
         case DATA_TRANSMISSION:
         {
-            WiFiClient client;
-
-            if (client.connect(server_ip, server_port))
+            Serial.println("Connecting to client..");
+            if(clientHandler.Connect())
             {
-                Serial.println("Connected to server");
-
-                // Send data to the server
                 String message = "Hello from ESP32-C3!";
-                client.println(message);
-                Serial.println("Sent: " + message);
+                clientHandler.Write(message);
 
-                // Close the connection
-                client.stop();
-                Serial.println("Connection closed");
-                transmission_retry_counter = 0;
-                program_state = SLEEP;
+                clientHandler.Stop();
             }
             else
             {
-                transmission_retry_counter++;
-                Serial.println("Failed to connect to server");
+                Serial.println("Failed to connecto to client");
             }
-
-            if(transmission_retry_counter == N_TRANSMISSION_RETRIES)
-            {
-                transmission_retry_counter = 0;
-                program_state = SLEEP;
-            }
-            
-            delay(5000);
-        }
+            program_state = SLEEP;
+       }
         default:
         break;
     }
