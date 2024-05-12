@@ -1,8 +1,8 @@
-#include "../inc/HMC5883L.h"
+#include "HMC5883L.h"
 #include <math.h>
 
-#define N_ID_REG 0x03
-#define MODE_MSK 0x03
+#define N_ID_REG   0x03
+#define MODE_MSK   0x03
 #define N_AXIS_REG 0x06
 static uint8_t buf[12] = {0};
 
@@ -81,7 +81,13 @@ float HMC5883L::GetHeading(void)
     {
       axes.x = 1;
     }
-    return atan2(axes.y, axes.x) * 180 / M_PI;
+    float heading = atan2(axes.y, axes.x) * 180 / M_PI;
+
+    if(heading < 0)
+    {
+        heading += 360;
+    }
+    return heading;
 }
 
 HMC5883L_ERROR_CODES HMC5883L::GetRawMeasurements(HMC5883L_AXES_t *axes)
@@ -99,9 +105,51 @@ HMC5883L_ERROR_CODES HMC5883L::_readAxisData(HMC5883L_AXES_t *axes)
     if(rc != I2C_OK)
         return HMC5883L_FAILED_TO_READ_DATA;
 
-    axes->x = buf[0] << 8 | buf[1];
-    axes->z = buf[2] << 8 | buf[3];
-    axes->y = buf[4] << 8 | buf[5];
+    axes->x = (int16_t) (buf[0] << 8 | buf[1]);
+    axes->z = (int16_t) (buf[2] << 8 | buf[3]);
+    axes->y = (int16_t) (buf[4] << 8 | buf[5]);
 
+    /*
+    axes->x = (int16_t) (buf[1] << 8 | buf[0]);
+    axes->z = (int16_t) (buf[3] << 8 | buf[2]);
+    axes->y = (int16_t) (buf[5] << 8 | buf[4]);
+    */
     return HMC5883L_OK;
+}
+
+uint16_t HMC5883L::_getGainScaleFactor(HMC5883L_GAIN_t gain)
+{
+    uint16_t scaleFactor = 0;
+    switch(gain)
+    {
+        case GAIN_0_88:
+            scaleFactor = 1370;
+        break;
+        case GAIN_1_3:
+            scaleFactor = 1090;
+        break;
+        case GAIN_1_9:
+            scaleFactor = 820;
+        break;
+        case GAIN_2_5:
+            scaleFactor = 660;
+        break;
+        case GAIN_4_0:
+            scaleFactor = 440;
+        break;
+        case GAIN_4_7:
+            scaleFactor = 390;
+        break;
+        case GAIN_5_6:
+            scaleFactor = 330;
+        break;
+        case GAIN_8_1:
+            scaleFactor = 230;
+        break;
+        default:
+            scaleFactor = 1;
+        break;
+    }
+
+    return scaleFactor;
 }

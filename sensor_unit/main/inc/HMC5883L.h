@@ -2,7 +2,7 @@
 #define __HMC5883L_h__
 
 #include <stdint.h>
-#include "../innc/i2cHandler.h"
+#include "i2cHandler.h"
 
 #define HMC5883L_ADDR 0x1E
 
@@ -100,5 +100,7 @@ class HMC5883L
 
         HMC5883L_AXES_t _axisData;
         HMC5883L_ERROR_CODES _readAxisData(HMC5883L_AXES_t *axes);
+        uint16_t _getGainScaleFactor(HMC5883L_GAIN_t gain);
+
 };
 #endif //__HMC5883L_h__
