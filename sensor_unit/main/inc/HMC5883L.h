@@ -1,30 +1,17 @@
-#ifndef __HMC5883L.h__
-#define __HMC5883L.h__
+#ifndef __HMC5883L_h__
+#define __HMC5883L_h__
 
-typedef struct
-{
-    HMC5883L_CONFIG_REG_A confA;
-    HMC5883L_CONFIG_REG_B confB;
-}HMC5883L_CONFIG_t;
+#include <stdint.h>
+#include "../innc/i2cHandler.h"
 
-typedef struct
-{
-    HMC5883L_AVG_SAMPLES_t nAverages;
-    HMC5883L_ODR_t outputDataRate;
-    HMC5883L_MEASUREMENT_MODE_t mode;
-}HMC5883L_CONFIG_REG_A;
-
-typedef struct
-{
-    HMC5883L_GAIN_t gain;
-}CONFIG_REG_B;
+#define HMC5883L_ADDR 0x1E
 
 typedef enum
 {
     AVG_1 = 0x00,
     AVG_2 = 0x01,
     AVG_4 = 0x02,
-    AVG_8 = 0x03,
+    AVG_8 = 0x03
 }HMC5883L_AVG_SAMPLES_t;
 
 typedef enum
@@ -66,24 +53,52 @@ typedef enum
 
 typedef struct
 {
-    int16_t x,
-    int16_t y,
-    int16_t z
+    int16_t x;
+    int16_t y;
+    int16_t z;
 }HMC5883L_AXES_t;
+
+typedef struct
+{
+    HMC5883L_AVG_SAMPLES_t nAverages;
+    HMC5883L_ODR_t outputDataRate;
+    HMC5883L_MEASUREMENT_MODE_t mode;
+}HMC5883L_CONFIG_REG_A;
+
+typedef struct
+{
+    HMC5883L_GAIN_t gain;
+}HMC5883L_CONFIG_REG_B;
+
+typedef struct
+{
+    HMC5883L_CONFIG_REG_A confA;
+    HMC5883L_CONFIG_REG_B confB;
+}HMC5883L_CONFIG_t;
 
 typedef enum
 {
-    HMC5883L_OK
+    HMC5883L_OK,
+    HMC5883L_FAILED_TO_READ_DATA,
+    HMC5883L_FAILED_TO_WRITE_DATA,
+    HMC5773L_FAILED_TO_CHANGE_MODE,
+    HMC5883L_UNKNOWN_DEVICE
 }HMC5883L_ERROR_CODES;
 
-class HMC588L
+class HMC5883L
 {
     public:
-        HMC88L(uint8_t deviceAddress);
-        HMC5883L_ERROR_CODES Initialize();
-        HMC5883L_ERROR_CODES ChangeSettings(HMC5883L_CONFIG_t *config);
-        HMC5883L_ERROR_CODES ChangeMode(HMC5883L_OPERATING_MODES_t *mode);
+        HMC5883L(uint8_t deviceAddress);
+        HMC5883L_ERROR_CODES Initialize(HMC5883L_CONFIG_t *config);
+        HMC5883L_ERROR_CODES UpdateConfig(HMC5883L_CONFIG_t *config);
+        HMC5883L_ERROR_CODES ChangeMode(HMC5883L_OPERATING_MODES_t mode);
         HMC5883L_ERROR_CODES GetRawMeasurements(HMC5883L_AXES_t *axes);
         float GetHeading(void);
-}
-#endif //__HMC5883L.h__
+   private:
+        I2CHandler _I2CHandler;
+        HMC5883L_CONFIG_t _config;
+
+        HMC5883L_AXES_t _axisData;
+        HMC5883L_ERROR_CODES _readAxisData(HMC5883L_AXES_t *axes);
+};
+#endif //__HMC5883L_h__
