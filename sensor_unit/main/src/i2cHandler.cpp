@@ -1,4 +1,4 @@
-#include "i2cHandler.h"
+#include "../inc/i2cHandler.h"
 #include <Wire.h>
 
 I2CHandler::I2CHandler(uint8_t deviceAddress)
