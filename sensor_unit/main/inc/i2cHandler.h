@@ -17,12 +17,12 @@ typedef enum
 class I2CHandler
 {
     public:
-        I2CHandler(uint16_t deviceAddress);
+        I2CHandler(uint8_t deviceAddress);
         I2C_ERROR_CODES Initialize();
         I2C_ERROR_CODES WriteToReg(uint8_t reg, uint8_t data[], uint8_t dataSize);
         I2C_ERROR_CODES ReadFromReg(uint8_t reg, uint8_t buf[], uint8_t bufSize);
     private:
-        uint16_t _deviceAddress;
+        uint8_t _deviceAddress;
 
 };
 
