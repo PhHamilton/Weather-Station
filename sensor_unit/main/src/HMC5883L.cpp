@@ -49,9 +49,9 @@ HMC5883L_ERROR_CODES HMC5883L::Initialize(HMC5883L_CONFIG_t *config)
 
 HMC5883L_ERROR_CODES HMC5883L::UpdateConfig(HMC5883L_CONFIG_t *config)
 {
-    buf[0] =    (uint8_t) (config->confA.nAverages << 5)
-             || (uint8_t) (config->confA.outputDataRate << 2)
-             || (uint8_t) (config->confA.mode);
+    buf[0] =   (uint8_t) (config->confA.nAverages << 5)
+             | (uint8_t) (config->confA.outputDataRate << 2)
+             | (uint8_t) (config->confA.mode);
 
     uint8_t rc = _I2CHandler.WriteToReg(CONFIG_REG_A, buf, 1);
 
@@ -94,10 +94,20 @@ HMC5883L_ERROR_CODES HMC5883L::GetRawMeasurements(HMC5883L_AXES_t *axes)
 {
     return _readAxisData(axes);
 }
+void HMC5883L::ReadAllRegisterSettings()
+{
+    _I2CHandler.ReadFromReg(0x00, buf, 10);
+    for(int i = 0; i < 10; i++)
+    {
+        Serial.print(buf[i]);
+        Serial.print(" ");
+    }
+    Serial.println("");
+}
 
 HMC5883L_ERROR_CODES HMC5883L::_readAxisData(HMC5883L_AXES_t *axes)
 {
-    HMC5883L_ERROR_CODES rcHMC5883L = ChangeMode(HMC5883L_OPERATING_MODES_t::SINGLE_MEASUREMENT);
+    HMC5883L_ERROR_CODES rcHMC5883L = ChangeMode(HMC5883L_OPERATING_MODES_t::CONTINOUS);
     if(rcHMC5883L != HMC5883L_OK)
       return HMC5773L_FAILED_TO_CHANGE_MODE;
 

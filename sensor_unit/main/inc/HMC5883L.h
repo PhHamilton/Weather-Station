@@ -93,6 +93,7 @@ class HMC5883L
         HMC5883L_ERROR_CODES UpdateConfig(HMC5883L_CONFIG_t *config);
         HMC5883L_ERROR_CODES ChangeMode(HMC5883L_OPERATING_MODES_t mode);
         HMC5883L_ERROR_CODES GetRawMeasurements(HMC5883L_AXES_t *axes);
+        void ReadAllRegisterSettings(void);
         float GetHeading(void);
    private:
         I2CHandler _I2CHandler;
