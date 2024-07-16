@@ -1,6 +1,5 @@
-#include "AS5600.h"
+#include "../inc/AS5600.h"
 
-uint8_t buf[8];
 
 typedef enum
 {

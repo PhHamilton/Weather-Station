@@ -1,4 +1,4 @@
-#include "HMC5883L.h"
+#include "../inc/HMC5883L.h"
 #include <math.h>
 
 #define N_ID_REG   0x03
