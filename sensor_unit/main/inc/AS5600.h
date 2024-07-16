@@ -23,6 +23,7 @@ class AS5600
         AS5600_STATUS_t CheckMagnet(void);
     private:
         uint16_t _rawAngle;
+        uint8_t buf[8] = {0};
         I2CHandler _I2CHandler;
 };
 #endif
