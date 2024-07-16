@@ -27,9 +27,9 @@ typedef enum
 
 typedef enum
 {
-    NORMAL        = 0x00,
-    POSITIVE_BIAS = 0x01,
-    NEGATIVE_BIAS = 0x02
+    HMC5883L_NORMAL = 0x00,
+    POSITIVE_BIAS  = 0x01,
+    NEGATIVE_BIAS  = 0x02
 }HMC5883L_MEASUREMENT_MODE_t;
 
 typedef enum
