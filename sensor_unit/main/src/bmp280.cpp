@@ -6,7 +6,7 @@
 #define N_PRESS_BITS 3
 
 uint8_t device_addr;
-uint8_t buf[N_COMPENSATION_BITS];
+volatile uint8_t buf[N_COMPENSATION_BITS];
 BMP280_CONFIG BMP280_config;
 
 typedef enum
@@ -55,6 +55,8 @@ BMP280::BMP280(uint8_t I2CAddress) : _I2CHandler(I2CAddress)
 BMP280_ERROR_CODES BMP280::Initialize(BMP280_CONFIG* config)
 {
     I2C_ERROR_CODES rc = _I2CHandler.ReadFromReg(ID, buf, 1);
+    Serial.print("ID: ");
+    Serial.println(buf[0]);
 
     if(rc != I2C_OK || buf[0] != BMP280_ID)
         return BMP280_FAILED_TO_READ_DATA;
@@ -91,6 +93,23 @@ BMP280_ERROR_CODES BMP280::_readCompensationValues()
     compensation_values.dig_P8 = buf[21] << 8 | buf[20];
     compensation_values.dig_P9 = buf[23] << 8 | buf[22];
 
+    Serial.println("Compensation Values:");
+    Serial.println("T1-3:");
+    Serial.println(compensation_values.dig_T1);
+    Serial.println(compensation_values.dig_T2);
+    Serial.println(compensation_values.dig_T3);
+
+    Serial.println("P1-9:");
+    Serial.println(compensation_values.dig_P1);
+    Serial.println(compensation_values.dig_P2);
+    Serial.println(compensation_values.dig_P3);
+    Serial.println(compensation_values.dig_P4);
+    Serial.println(compensation_values.dig_P5);
+    Serial.println(compensation_values.dig_P6);
+    Serial.println(compensation_values.dig_P7);
+    Serial.println(compensation_values.dig_P8);
+    Serial.println(compensation_values.dig_P9);
+
     if(rc != I2C_OK)
         return BMP280_FAILED_TO_READ_DATA;
 
@@ -103,15 +122,20 @@ BMP280_ERROR_CODES BMP280::UpdateConfig(BMP280_CONFIG *config)
     _config.overSamplingPress = config->overSamplingPress;
     _config.mode = config->mode;
 
+    uint8_t reg_settings = 1 << 5 | 1 << 2 | config->mode;
+    /*
     uint8_t reg_settings = config->overSamplingTemp  << 5 |
                            config->overSamplingPress << 2 |
                            config->mode;
+    */
 
+    Serial.println("CTRL_MEAS:");
+    Serial.println(reg_settings);
     I2C_ERROR_CODES rc = _I2CHandler.WriteToReg(CTRL_MEAS, (uint8_t*)&reg_settings, 1);
     if(rc != I2C_OK)
         return BMP280_FAILED_TO_WRITE_DATA;
 
-    Serial.println("Config updated!");
+    //Serial.println("Config updated!");
     return BMP280_OK;
 }
 
@@ -122,27 +146,52 @@ BMP280_ERROR_CODES BMP280::ChangeMode(BMP280_MODES mode)
 }
 BMP280_ERROR_CODES BMP280::ReadData(void)
 {
-    ChangeMode(FORCED);
+    ChangeMode(NORMAL);
     UpdateConfig(&_config);
 
-    _I2CHandler.ReadFromReg(CTRL_MEAS, buf, 1);
-    Serial.println(buf[0]);
+    //_I2CHandler.ReadFromReg(CTRL_MEAS, buf, 1);
+    //Serial.println(buf[0]);
 
-    I2C_ERROR_CODES rc = _I2CHandler.ReadFromReg(PRESS_MSB, buf, N_PRESS_BITS + N_TEMP_BITS);
+    memset(buf, 0, N_COMPENSATION_BITS);
+
+    I2C_ERROR_CODES rc = _I2CHandler.ReadFromReg(0xF7, buf, 6);//N_PRESS_BITS + N_TEMP_BITS);
+
+    Serial.println("Press MSB");
+    for(int i = 0; i < N_PRESS_BITS + N_TEMP_BITS; i++)
+    {
+        Serial.print("i = ");
+        Serial.print(i);
+        Serial.print(": ");
+        Serial.println(buf[i]);
+    }
 
     if(rc != I2C_OK)
     {
         printf("failed.. %i\n", rc);
         return BMP280_FAILED_TO_READ_DATA;
     }
-    uint32_t adc_press = buf[0] << 12 | buf[1] << 4 | buf[2] >> 4;
-    uint32_t adc_temp  = buf[3] << 12 | buf[4] << 4 | buf[5] >> 4;
+    uint32_t adc_press, adc_temp;
+    adc_press = (uint32_t)buf[0] << 12 | (uint32_t)buf[1] << 4 | (uint32_t)buf[2] >> 4;
+    adc_temp  = (uint32_t)buf[3] << 12 | (uint32_t)buf[4] << 4 | (uint32_t)buf[5] >> 4;
+
+    Serial.println("adc_press");
+    Serial.println(adc_press);
+    Serial.println("adc_temp");
+    Serial.println(adc_temp);
 
     int32_t t_fine = _computeFineTemperature(adc_temp);
+
+    Serial.println("t_fine");
+    Serial.println(t_fine);
 
     _temperature = _computeTemperature(t_fine);
     _pressure = _computePressure(adc_press, t_fine);
 
+    Serial.println("temperature");
+    Serial.println(_temperature);
+
+    Serial.println("pressure");
+    Serial.println(_pressure);
     return BMP280_OK;
 }
 
@@ -155,11 +204,16 @@ int32_t BMP280::_computeFineTemperature(uint32_t adc_temp)
 {
     int32_t var1, var2;
 
-    var1 = ((((adc_temp>>3) - ((int32_t)compensation_values.dig_T1<<1))) 
+    var1 = ((((adc_temp>>3) - ((int32_t)compensation_values.dig_T1<<1)))
             * ((int32_t)compensation_values.dig_T2)) >> 11;
-    var2 = (((((adc_temp>>4) - ((int32_t)compensation_values.dig_T1)) 
-            * ((adc_temp>>4) - ((int32_t)compensation_values.dig_T1))) >> 12) 
+    var2 = (((((adc_temp>>4) - ((int32_t)compensation_values.dig_T1))
+            * ((adc_temp>>4) - ((int32_t)compensation_values.dig_T1))) >> 12)
             * ((int32_t)compensation_values.dig_T3)) >> 14;
+
+    Serial.println("var1");
+    Serial.println(var1);
+    Serial.println("var2");
+    Serial.println(var2);
 
     return var1 + var2;
 }
@@ -182,7 +236,7 @@ float BMP280::_computePressure(uint32_t adc_press, int32_t t_fine)
     var2 = (((int64_t)compensation_values.dig_P8) * p) >> 19;
     p = ((p + var1 + var2) >> 8) + (((int64_t)compensation_values.dig_P7)<<4);
 
-    return (uint32_t)p/(1000 * 256);
+    return (float)p / 256 * 0.01;
 }
 
 float BMP280::GetTemperature(void)
